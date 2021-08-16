@@ -1,0 +1,11 @@
+tensorflow
+opencv-python
+numpy
+gtts
+playsound
+PyAudio
+PyObjC
+PyQt5
+pyshine
+sounddevice
+soundfile

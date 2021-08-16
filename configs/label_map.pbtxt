@@ -1,0 +1,15 @@
+item {
+    id: 1,
+    name: 'without_mask',
+    display_name: 'without_mask',
+}
+item {
+    id: 2,
+    name: 'with_mask',
+    display_name: 'with_mask',
+}
+item {
+    id: 3,
+    name: 'mask_weared_incorrect',
+    display_name: 'mask_weared_incorrect',
+}
