@@ -1,7 +1,6 @@
 tensorflow
 opencv-python
 numpy
-gtts
 playsound
 PyAudio
 PyObjC
@@ -13,3 +12,4 @@ SpeechRecognition
 wheel
 python-Levenshtein
 fuzzywuzzy
+ndg-httpsclient
