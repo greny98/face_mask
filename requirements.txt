@@ -13,3 +13,4 @@ wheel
 python-Levenshtein
 fuzzywuzzy
 ndg-httpsclient
+pyttsx3
