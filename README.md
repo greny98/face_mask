@@ -10,7 +10,7 @@
 - **Questions** in `Question.txt` and **Answers** in `Answer.txt`
 - Each question and each answer is only on one line
 ## 2.2. Start up
-- Read all questions from the file `Question.txt`. Since each question is only on one line, we will separate the content by a newline character `\n`.
+- Read all questions and answers from the file `Question.txt` and `Answer.txt`. Since each sentence is only on one line, we will separate the content by a newline character `\n`.
 - Use `pyttsx3` to greetings
 - Start microphone and filter noise
 ## 2.3. Communicating with visitors

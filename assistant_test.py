@@ -22,10 +22,11 @@ if __name__ == '__main__':
         recognizer.adjust_for_ambient_noise(source)  # loc nhieu
         is_communicate = True
         count_failed = 0
-        say("hello, what information would you like to know?", engine)
+        say("Hi, nice to meet you", engine)
         while is_communicate:
+            say("what information would you like to know?", engine)
             print("Listening...")
-            audio = recognizer.listen(source, timeout=6, phrase_time_limit=5)
+            audio = recognizer.listen(source, timeout=10, phrase_time_limit=5)
             try:
                 print('Waiting...')
                 say("please wait a moment", engine)
@@ -35,15 +36,18 @@ if __name__ == '__main__':
                 print("Question num: ", ques_num)
                 if ques_num != -1:
                     print("Answer: ", answers[ques_num])
-                say(answers[ques_num], engine)
+                    say(answers[ques_num], engine)
+                else:
+                    say("I don't know", engine)
                 say('do you want any other information?', engine)
                 print("Listening...")
-                audio = recognizer.listen(source)
-                next = recognizer.recognize_google(audio, language='vi')
+                audio = recognizer.listen(source, timeout=10, phrase_time_limit=5)
+                next = recognizer.recognize_google(audio, language='en')
+                print(next)
                 next = utils.remove_accents(next.lower())
                 if (fuzz.ratio(next, 'no thank') >= 70 or
                     fuzz.ratio(next, 'no') >= 70 or
-                    fuzz.ratio(next, 'toi khong nhe') >= 70):
+                    fuzz.ratio(next, "i don't") >= 70):
                     say('Goodbye, have a nice day', engine)
                     break
             except sr.RequestError:  # Service/network error
@@ -51,7 +55,7 @@ if __name__ == '__main__':
                 count_failed += 1
             except sr.UnknownValueError:  # Can't convert speech to text
                 print("Unable to recognize speech")
-                utils.cant_hear()
+                say("can you repeat?", engine)
                 count_failed += 1
             if count_failed >= 5:
                 break
