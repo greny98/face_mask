@@ -9,3 +9,7 @@ PyQt5
 pyshine
 sounddevice
 soundfile
+SpeechRecognition
+wheel
+python-Levenshtein
+fuzzywuzzy

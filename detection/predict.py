@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-from object_detection.utils import visualization_utils as viz_utils
 from playsound import playsound
 import threading
 from detection import utils
