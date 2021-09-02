@@ -3,13 +3,16 @@ import cv2
 from playsound import playsound
 import threading
 from detection import utils
+import pyttsx3
 
 
-def remind():
+
+def remind(engine):
     import time
     global is_reminding
     is_reminding = True
-    playsound('audio.mp3')
+    engine.say("Please Wear Face Mask")
+    engine.runAndWait()
     time.sleep(1)
     is_reminding = False
 
@@ -17,7 +20,7 @@ def remind():
 is_reminding = False
 
 
-def execute(frame, model):
+def execute(frame, model,engine):
     # Convert to RGB
     image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     # Predict
@@ -43,6 +46,6 @@ def execute(frame, model):
 
     # Check from without mask to with mask
     if need_mask and (not is_reminding):
-        t1 = threading.Thread(target=remind, args=[])
+        t1 = threading.Thread(target=remind, args=[engine])
         t1.start()
     return frame

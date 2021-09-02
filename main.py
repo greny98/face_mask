@@ -1,7 +1,7 @@
 import sys
-from PyQt5.QtCore import QThread, pyqtSignal, Qt, pyqtSlot, QRect, QSize
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5 import QtGui, QtCore
+from PyQt5.QtCore import QThread, pyqtSignal, Qt, pyqtSlot, QRect, QSize, QTimer, QRunnable, QThreadPool
+from PyQt5.QtGui import QImage, QPixmap, QMovie
+from PyQt5 import QtGui
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import *
 
@@ -10,17 +10,24 @@ import time
 
 from detection import predict, utils
 from ui_loading_screen import Ui_LoadingScreen
+from assistant import process
+import pyttsx3
 
-counter = 0
+engine = pyttsx3.init()
 
 
-class Thread(QThread):
+class FaceMaskThread(QThread):
     changePixmap = pyqtSignal(QImage)
     is_running = True
+    is_stopping_check_mask = False
 
     @pyqtSlot(bool)
     def getStatusFromApp(self, status):
         self.is_running = status
+
+    @pyqtSlot(bool)
+    def setCheckMask(self, status):
+        self.is_stopping_check_mask = status
 
     def run(self):
         path_dict = {
@@ -34,7 +41,8 @@ class Thread(QThread):
             ret, frame = cap.read()
             if not ret:
                 break
-            frame = predict.execute(frame, model)
+            if not self.is_stopping_check_mask:
+                frame = predict.execute(frame, model, engine)
             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             h, w, ch = rgb.shape
             bytes_per_line = ch * w
@@ -45,32 +53,47 @@ class Thread(QThread):
             cv2.waitKey(3) & 0xFF
             self.changePixmap.emit(p)
             if not self.is_running:
+                # self.terminate()
                 break
 
 
+class VoiceAssistantThread(QThread):
+    def __init__(self, showVoice, hideVoice, showLoading, hideLoading):
+        super(VoiceAssistantThread, self).__init__()
+        self.showVoice = showVoice
+        self.hideVoice = hideVoice
+        self.showLoading = showLoading
+        self.hideLoading = hideLoading
+
+    def run(self):
+        process.run(engine, self.showVoice, self.hideVoice, self.showLoading, self.hideLoading)
+
+
 class App(QWidget):
-    def __init__(self, thread):
+    def __init__(self):
         super().__init__()
-        self.title = 'FaceMask'
-        self.initUI(thread)
 
-    @pyqtSlot(QImage)
-    def setImage(self, image):
-        self.label.setPixmap(QPixmap.fromImage(image))
+        self.threadPool = QThreadPool()
+        self.setupUi()
+        self.executeFaceThread()
 
-    def initUI(self, thread):
-        self.setWindowTitle(self.title)
-        # self.setGeometry(self.left, self.top, self.width, self.height)
+    def setupUi(self):
+        self.setWindowTitle("Face Mask Detection")
+        self.setWindowIcon(QtGui.QIcon("icon/face_chibi.png"))
         self.resize(1200, 860)
-        self.setWindowIcon(QtGui.QIcon("face_chibi.png"))
         self.centralwidget = QWidget(self)
-        # create button voice
+
+        # create button start voice
         self.btn_voice = QPushButton(self.centralwidget)
         self.btn_voice.setGeometry(QRect(1050, 50, 101, 41))
         self.btn_voice.setObjectName("btn_voice")
         self.btn_voice.setText("Start Voice")
+        self.btn_voice.clicked.connect(self.evt_btn_voice_clicked)
         # create icon loading
-
+        self.labelLoading = QLabel(self)
+        self.labelLoading.move(940, 0)
+        self.movie = QMovie("icon/loader.gif")
+        self.labelLoading.setMovie(self.movie)
         # create a label
         self.label = QLabel(self)
         self.label.setGeometry(QRect(40, 40, 960, 720))
@@ -79,14 +102,48 @@ class App(QWidget):
         self.label.setText("")
         self.label.setObjectName("label")
         self.label.setStyleSheet("border:0.5px solid #CCC")
-        # th = Thread(self)
-        self.th = thread
-        thread.changePixmap.connect(self.setImage)
-        # th.start()
         self.show()
 
+    def showLoading(self):
+        print('Show loading')
+        self.movie.start()
+
+    def hideLoading(self):
+        print('hide loading')
+        self.movie.stop()
+
+    def showVoiceIcon(self):
+        self.btn_voice.setIcon(QtGui.QIcon("icon/micro.png"))
+
+    def hideVoiceIcon(self):
+        self.btn_voice.setIcon(QtGui.QIcon())
+
+    @pyqtSlot(QImage)
+    def setImage(self, image):
+        self.label.setPixmap(QPixmap.fromImage(image))
+
+    def executeFaceThread(self):
+        self.faceThread = FaceMaskThread()
+        self.faceThread.changePixmap.connect(self.setImage)
+        self.faceThread.start()
+
+    def evt_btn_voice_clicked(self):
+        self.faceThread.setCheckMask(True)
+        self.voiceThread = VoiceAssistantThread(self.showVoiceIcon, self.hideVoiceIcon, self.showLoading,
+                                                self.hideLoading)
+        self.voiceThread.start()
+        self.btn_voice.setText("Stop Voice")
+        self.btn_voice.setEnabled(False)
+        self.voiceThread.finished.connect(self.evt_voice_thread_finished)
+
+    def evt_voice_thread_finished(self):
+        self.faceThread.setCheckMask(False)
+        self.btn_voice.setText("Start Voice")
+        self.btn_voice.setEnabled(True)
+
+
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        self.th.getStatusFromApp(False)
+        self.faceThread.getStatusFromApp(False)
         time.sleep(1)
 
 
@@ -95,12 +152,12 @@ class LoadingApp(QMainWindow):
         super(LoadingApp, self).__init__()
         self.ui = Ui_LoadingScreen()
         self.ui.setupUi(self)
-        self.thread = Thread(self)
-        self.thread.start()
+
+        self.counter = 0
 
         # REMOVE TITLE BAR
-        self.setWindowFlag(QtCore.Qt.FramelessWindowHint)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setWindowFlag(Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
         # DROP SHADOW EFFECT
         self.shadow = QGraphicsDropShadowEffect(self)
@@ -110,44 +167,33 @@ class LoadingApp(QMainWindow):
         self.shadow.setColor(QColor(0, 0, 0, 60))
         self.ui.dropShadowFrame.setGraphicsEffect(self.shadow)
 
-        # QTIMER ==> START
-        self.timer = QtCore.QTimer()
+        # QTIMER
+        self.timer = QTimer()
         self.timer.timeout.connect(self.progress)
         self.timer.start(30)
-        # CHANGE DESCRIPTION
-        # Initial Text
+
         self.ui.label_description.setText(
             "<strong>WELCOME</strong> TO MY APPLICATION")
-        # Change Texts
-        QtCore.QTimer.singleShot(4500, lambda: self.ui.label_description.setText(
+        QTimer.singleShot(4500, lambda: self.ui.label_description.setText(
             "<strong>LOADING</strong> DATABASE"))
-        QtCore.QTimer.singleShot(10000, lambda: self.ui.label_description.setText(
+        QTimer.singleShot(10000, lambda: self.ui.label_description.setText(
             "<strong>LOADING</strong> USER INTERFACE"))
         # SHOW ==> MAIN WINDOW
-        self.show()
 
-    # ==> APP FUNCTIONS
-    ########################################################################
     def progress(self):
-        global counter
-        # SET VALUE TO PROGRESS BAR
-        self.ui.progressBar.setValue(counter)
-        # CLOSE Loading SCREEN AND OPEN APP
-        if counter > 100:
-            # STOP TIMER
+        self.counter += 0.4
+        self.ui.progressBar.setValue(self.counter)
+        if self.counter > 100:
             self.timer.stop()
             # SHOW MAIN WINDOW
-            self.main = App(self.thread)
+            self.main = App()
             self.main.show()
             # CLOSE Loading SCREEN
             self.close()
-        # INCREASE COUNTER - Config for compatible with loading model
-        counter += 0.4
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-
-    window = LoadingApp()
+    window = App()
     window.show()
     sys.exit(app.exec_())

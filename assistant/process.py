@@ -33,7 +33,6 @@ def load_answers():
         answers = text.split('\n')
         return answers
 
-
 def remove_accents(input_str):
     s1 = u'ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾếỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹ'
     s0 = u'AAAAEEEIIOOOOUUYaaaaeeeiioooouuyAaDdIiUuOoUuAaAaAaAaAaAaAaAaAaAaAaAaEeEeEeEeEeEeEeEeIiIiOoOoOoOoOoOoOoOoOoOoOoOoUuUuUuUuUuUuUuYyYyYyYy'
@@ -51,13 +50,11 @@ def say(text, engine):
     engine.say(text)
     engine.runAndWait()
 
-
-def run():
+def run(engine,showVoice,hideVoice,showLoading,hideLoading):
     questions = load_questions()
     answers = load_answers()
     recognizer = sr.Recognizer()
     microphone = sr.Microphone()
-    engine = pyttsx3.init()
     engine.setProperty('rate', 175)
 
     with microphone as source:
@@ -68,11 +65,15 @@ def run():
         while is_communicate:
             say("what information would you like to know?", engine)
             print("Listening...")
+            showVoice()
             audio = recognizer.listen(source, timeout=10, phrase_time_limit=5)
             try:
                 print('Waiting...')
+                hideVoice()
+                showLoading()
                 say("please wait a moment", engine)
                 ques = recognizer.recognize_google(audio, language='vi')
+                hideLoading()
                 print("Question: ", ques)
                 ques_num = find_question_num(ques, questions)
                 print("Question num: ", ques_num)
@@ -83,8 +84,10 @@ def run():
                     say("I don't know", engine)
                 say('do you want any other information?', engine)
                 print("Listening...")
+                showVoice()
                 audio = recognizer.listen(source, timeout=10, phrase_time_limit=5)
                 next = recognizer.recognize_google(audio, language='en')
+                hideVoice()
                 print(next)
                 next = remove_accents(next.lower())
                 if (fuzz.ratio(next, 'no thank') >= 70 or
