@@ -50,7 +50,7 @@ def say(text, engine):
     engine.say(text)
     engine.runAndWait()
 
-def run(engine,showVoice,hideVoice,showLoading,hideLoading):
+def run(engine,showVoice,hideVoice):
     questions = load_questions()
     answers = load_answers()
     recognizer = sr.Recognizer()
@@ -70,10 +70,10 @@ def run(engine,showVoice,hideVoice,showLoading,hideLoading):
             try:
                 print('Waiting...')
                 hideVoice()
-                showLoading()
+                # showLoading()
                 say("please wait a moment", engine)
                 ques = recognizer.recognize_google(audio, language='vi')
-                hideLoading()
+                # hideLoading()
                 print("Question: ", ques)
                 ques_num = find_question_num(ques, questions)
                 print("Question num: ", ques_num)

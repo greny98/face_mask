@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtCore import QThread, pyqtSignal, Qt, pyqtSlot, QRect, QSize, QTimer, QRunnable, QThreadPool
+from PyQt5.QtCore import QThread, pyqtSignal, Qt, pyqtSlot, QRect, QSize, QTimer
 from PyQt5.QtGui import QImage, QPixmap, QMovie
 from PyQt5 import QtGui
 from PyQt5.QtGui import QColor
@@ -53,27 +53,23 @@ class FaceMaskThread(QThread):
             cv2.waitKey(3) & 0xFF
             self.changePixmap.emit(p)
             if not self.is_running:
-                # self.terminate()
                 break
 
 
 class VoiceAssistantThread(QThread):
-    def __init__(self, showVoice, hideVoice, showLoading, hideLoading):
+    def __init__(self, showVoice, hideVoice):
         super(VoiceAssistantThread, self).__init__()
         self.showVoice = showVoice
         self.hideVoice = hideVoice
-        self.showLoading = showLoading
-        self.hideLoading = hideLoading
 
     def run(self):
-        process.run(engine, self.showVoice, self.hideVoice, self.showLoading, self.hideLoading)
+        process.run(engine, self.showVoice, self.hideVoice)
 
 
 class App(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.threadPool = QThreadPool()
         self.setupUi()
         self.executeFaceThread()
 
@@ -90,10 +86,10 @@ class App(QWidget):
         self.btn_voice.setText("Start Voice")
         self.btn_voice.clicked.connect(self.evt_btn_voice_clicked)
         # create icon loading
-        self.labelLoading = QLabel(self)
-        self.labelLoading.move(940, 0)
-        self.movie = QMovie("icon/loader.gif")
-        self.labelLoading.setMovie(self.movie)
+        # self.labelLoading = QLabel(self)
+        # self.labelLoading.move(940, 0)
+        # self.movie = QMovie("icon/loader.gif")
+        # self.labelLoading.setMovie(self.movie)
         # create a label
         self.label = QLabel(self)
         self.label.setGeometry(QRect(40, 40, 960, 720))
@@ -104,13 +100,6 @@ class App(QWidget):
         self.label.setStyleSheet("border:0.5px solid #CCC")
         self.show()
 
-    def showLoading(self):
-        print('Show loading')
-        self.movie.start()
-
-    def hideLoading(self):
-        print('hide loading')
-        self.movie.stop()
 
     def showVoiceIcon(self):
         self.btn_voice.setIcon(QtGui.QIcon("icon/micro.png"))
@@ -124,13 +113,12 @@ class App(QWidget):
 
     def executeFaceThread(self):
         self.faceThread = FaceMaskThread()
-        self.faceThread.changePixmap.connect(self.setImage)
         self.faceThread.start()
+        self.faceThread.changePixmap.connect(self.setImage)
 
     def evt_btn_voice_clicked(self):
         self.faceThread.setCheckMask(True)
-        self.voiceThread = VoiceAssistantThread(self.showVoiceIcon, self.hideVoiceIcon, self.showLoading,
-                                                self.hideLoading)
+        self.voiceThread = VoiceAssistantThread(self.showVoiceIcon, self.hideVoiceIcon)
         self.voiceThread.start()
         self.btn_voice.setText("Stop Voice")
         self.btn_voice.setEnabled(False)
@@ -194,6 +182,6 @@ class LoadingApp(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = App()
+    window = LoadingApp()
     window.show()
     sys.exit(app.exec_())
