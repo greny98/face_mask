@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtCore import QThread, pyqtSignal, Qt, pyqtSlot, QRect, QSize, QTimer
-from PyQt5.QtGui import QImage, QPixmap, QMovie
+from PyQt5.QtGui import QIcon, QImage, QPixmap
 from PyQt5 import QtGui
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import *
@@ -9,7 +9,9 @@ import cv2
 import time
 
 from detection import predict, utils
-from ui_loading_screen import Ui_LoadingScreen
+from loading_progress_bar import Loading_Progressbar
+from loading_circle_bar import Loading_CircleBar
+
 from assistant import process
 import pyttsx3
 
@@ -26,7 +28,7 @@ class FaceMaskThread(QThread):
         self.is_running = status
 
     @pyqtSlot(bool)
-    def setCheckMask(self, status):
+    def stopCheckMask(self, status):
         self.is_stopping_check_mask = status
 
     def run(self):
@@ -68,38 +70,39 @@ class VoiceAssistantThread(QThread):
 
 class App(QWidget):
     def __init__(self):
-        super().__init__()
-
+        super(App, self).__init__()
         self.setupUi()
+        # activate face-thread
         self.executeFaceThread()
-
+    # UI for Main App
     def setupUi(self):
-        self.setWindowTitle("Face Mask Detection")
-        self.setWindowIcon(QtGui.QIcon("icon/face_chibi.png"))
+        # Config common for App
+        self.setWindowTitle("Face Mask Detector")
+        self.setWindowIcon(QIcon("icon/face_chibi.png"))
         self.resize(1200, 860)
-        self.centralwidget = QWidget(self)
+        self.setStyleSheet(u"background: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0 #3399FF, stop:1 #66B2FF);")
 
-        # create button start voice
+        self.centralwidget = QWidget(self)
         self.btn_voice = QPushButton(self.centralwidget)
-        self.btn_voice.setGeometry(QRect(1050, 50, 101, 41))
+        self.btn_voice.setStyleSheet(u"QPushButton{\n"
+                                      "	border-radius: 20px;\n"
+                                      "	background-color: rgba(255, 255, 255, 120);\n"
+                                      "}")
+        self.btn_voice.setGeometry(QRect(550, 40, 100, 40))
         self.btn_voice.setObjectName("btn_voice")
         self.btn_voice.setText("Start Voice")
         self.btn_voice.clicked.connect(self.evt_btn_voice_clicked)
-        # create icon loading
-        # self.labelLoading = QLabel(self)
-        # self.labelLoading.move(940, 0)
-        # self.movie = QMovie("icon/loader.gif")
-        # self.labelLoading.setMovie(self.movie)
+        # TODO:reate icon loading
+
         # create a label
         self.label = QLabel(self)
-        self.label.setGeometry(QRect(40, 40, 960, 720))
+        self.label.setStyleSheet("QLabel{ background-color: rgba(255, 255, 255, 120) }")
+        self.label.setGeometry(QRect(120, 100, 960, 720))
         self.label.setMinimumSize(QSize(960, 720))
         self.label.setMaximumSize(QSize(960, 720))
         self.label.setText("")
         self.label.setObjectName("label")
         self.label.setStyleSheet("border:0.5px solid #CCC")
-        self.show()
-
 
     def showVoiceIcon(self):
         self.btn_voice.setIcon(QtGui.QIcon("icon/micro.png"))
@@ -117,28 +120,28 @@ class App(QWidget):
         self.faceThread.changePixmap.connect(self.setImage)
 
     def evt_btn_voice_clicked(self):
-        self.faceThread.setCheckMask(True)
-        self.voiceThread = VoiceAssistantThread(self.showVoiceIcon, self.hideVoiceIcon)
+        self.faceThread.stopCheckMask(True)
+        self.voiceThread = VoiceAssistantThread(
+            self.showVoiceIcon, self.hideVoiceIcon)
         self.voiceThread.start()
         self.btn_voice.setText("Stop Voice")
         self.btn_voice.setEnabled(False)
         self.voiceThread.finished.connect(self.evt_voice_thread_finished)
 
     def evt_voice_thread_finished(self):
-        self.faceThread.setCheckMask(False)
+        self.faceThread.stopCheckMask(False)
         self.btn_voice.setText("Start Voice")
         self.btn_voice.setEnabled(True)
-
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         self.faceThread.getStatusFromApp(False)
         time.sleep(1)
 
 
-class LoadingApp(QMainWindow):
+class LoadingProgressApp(QMainWindow):
     def __init__(self):
-        super(LoadingApp, self).__init__()
-        self.ui = Ui_LoadingScreen()
+        super(LoadingProgressApp, self).__init__()
+        self.ui = Loading_Progressbar()
         self.ui.setupUi(self)
 
         self.counter = 0
@@ -174,14 +177,102 @@ class LoadingApp(QMainWindow):
         if self.counter > 100:
             self.timer.stop()
             # SHOW MAIN WINDOW
-            self.main = App()
-            self.main.show()
+            # self.main = App()
+            # self.main.show()
             # CLOSE Loading SCREEN
             self.close()
 
 
+class LoadingCircleApp(QMainWindow):
+    def __init__(self):
+        super(LoadingCircleApp, self).__init__()
+        self.ui = Loading_CircleBar()
+        self.ui.setupUi(self)
+
+        # create params
+        self.counter = 0
+        self.jumper = 10
+
+        # ==> SET INITIAL PROGRESS BAR TO (0) ZERO
+        self.progressBarValue(0)
+
+        # ==> REMOVE STANDARD TITLE BAR
+        self.setWindowFlags(Qt.FramelessWindowHint)  # Remove title bar
+        # Set background to transparent
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+        # ==> APPLY DROP SHADOW EFFECT
+        self.shadow = QGraphicsDropShadowEffect(self)
+        self.shadow.setBlurRadius(20)
+        self.shadow.setXOffset(0)
+        self.shadow.setYOffset(0)
+        self.shadow.setColor(QColor(0, 0, 0, 120))
+        self.ui.circularBg.setGraphicsEffect(self.shadow)
+
+        # QTIMER ==> START
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.progress)
+        # TIMER IN MILLISECONDS
+        self.timer.start(15)
+
+        # SHOW ==> MAIN WINDOW
+        ########################################################################
+    def progress(self):
+        value = self.counter
+
+        # HTML TEXT PERCENTAGE
+        htmlText = """<p><span style=" font-size:68pt;">{VALUE}</span><span style=" font-size:58pt; vertical-align:super;">%</span></p>"""
+        # REPLACE VALUE
+        newHtml = htmlText.replace("{VALUE}", str(self.jumper))
+        if(value > self.jumper):
+            # APPLY NEW PERCENTAGE TEXT
+            self.ui.labelPercentage.setText(newHtml)
+            self.jumper += 10
+
+        # SET VALUE TO PROGRESS BAR
+        # fix max value error if > than 100
+        if value >= 100:
+            value = 1.000
+        self.progressBarValue(value)
+
+        if self.counter > 100:
+            # STOP TIMER
+            self.timer.stop()
+            # SHOW MAIN WINDOW
+            self.main = App()
+            self.main.show()
+            # CLOSE SPLASH SCREEN
+            self.close()
+
+        # INCREASE COUNTER
+        self.counter += 0.5
+
+    # DEF PROGRESS BAR VALUE
+    ########################################################################
+    def progressBarValue(self, value):
+        # PROGRESSBAR STYLESHEET BASE
+        styleSheet = """
+        QFrame{
+        	border-radius: 150px;
+        	background-color: qconicalgradient(cx:0.5, cy:0.5, angle:90, stop:{STOP_1} rgba(255, 0, 127, 0), stop:{STOP_2} rgba(85, 170, 255, 255));
+        }
+        """
+        # GET PROGRESS BAR VALUE, CONVERT TO FLOAT AND INVERT VALUES
+        # stop works of 1.000 to 0.000
+        progress = (100 - value) / 100.0
+        # GET NEW VALUES
+        stop_1 = str(progress - 0.001)
+        stop_2 = str(progress)
+
+        # SET VALUES TO NEW STYLESHEET
+        newStylesheet = styleSheet.replace(
+            "{STOP_1}", stop_1).replace("{STOP_2}", stop_2)
+        # APPLY STYLESHEET WITH NEW VALUES
+        self.ui.circularProgress.setStyleSheet(newStylesheet)
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = LoadingApp()
+    window = LoadingCircleApp()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

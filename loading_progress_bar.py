@@ -4,7 +4,7 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import *
 
 
-class Ui_LoadingScreen(object):
+class Loading_Progressbar(object):
     def setupUi(self, LoadingScreen):
         # Layout
         if LoadingScreen.objectName():
@@ -19,7 +19,7 @@ class Ui_LoadingScreen(object):
         # Frame
         self.dropShadowFrame = QFrame(self.centralwidget)
         self.dropShadowFrame.setObjectName(u"dropShadowFrame")
-        self.dropShadowFrame.setStyleSheet(u"QFrame {	\n"
+        self.dropShadowFrame.setStyleSheet(u"QFrame {\n"
                                            "	background-color: rgb(56, 58, 89);	\n"
                                            "	color: rgb(220, 220, 220);\n"
                                            "	border-radius: 10px;\n"
@@ -32,7 +32,7 @@ class Ui_LoadingScreen(object):
         self.label_title.setGeometry(QRect(0, 90, 661, 61))
         font = QFont()
         font.setFamily(u"Segoe UI")
-        font.setPointSize(40)
+        font.setPointSize(32)
         self.label_title.setFont(font)
         self.label_title.setStyleSheet(u"color: rgb(254, 121, 199);")
         self.label_title.setAlignment(Qt.AlignCenter)
@@ -86,7 +86,7 @@ class Ui_LoadingScreen(object):
         SplashScreen.setWindowTitle(QCoreApplication.translate(
             "LoadingScreen", u"MainWindow", None))
         self.label_title.setText(QCoreApplication.translate(
-            "LoadingScreen", u"<strong>FACE MASK DETECTION</strong>", None))
+            "LoadingScreen", u"<strong>FACE MASK DETECTOR</strong>", None))
         self.label_description.setText(
             QCoreApplication.translate("LoadingScreen", u"<strong>APP</strong> DESCRIPTION", None))
         self.label_loading.setText(QCoreApplication.translate(
