@@ -34,7 +34,7 @@ class Loading_Progressbar(object):
         font.setFamily(u"Segoe UI")
         font.setPointSize(32)
         self.label_title.setFont(font)
-        self.label_title.setStyleSheet(u"color: rgb(254, 121, 199);")
+        self.label_title.setStyleSheet(u"color: rgb(222, 100, 100);")
         self.label_title.setAlignment(Qt.AlignCenter)
         # Description
         self.label_description = QLabel(self.dropShadowFrame)
@@ -60,7 +60,7 @@ class Loading_Progressbar(object):
                                        "}\n"
                                        "QProgressBar::chunk{\n"
                                        "	border-radius: 10px;\n"
-                                       "	background-color: qlineargradient(spread:pad, x1:0, y1:0.511364, x2:1, y2:0.523, stop:0 rgba(254, 121, 199, 255), stop:1 rgba(170, 85, 255, 255));\n"
+                                       "	background-color: qlineargradient(spread:pad, x1:0, y1:0.511364, x2:1, y2:0.523, stop:0 rgba(222, 100, 100, 255), stop:1 rgba(222, 180, 180, 255));\n"
                                        "}")
         self.progressBar.setValue(0)
         # Label loading

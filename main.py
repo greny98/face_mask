@@ -80,7 +80,7 @@ class App(QWidget):
         self.setWindowTitle("Face Mask Detector")
         self.setWindowIcon(QIcon("icon/face_chibi.png"))
         self.resize(1200, 860)
-        self.setStyleSheet(u"background: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0 #3399FF, stop:1 #66B2FF);")
+        self.setStyleSheet(u"background: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0 #DEA9A9, stop:1 #DB8C8C);")
 
         self.centralwidget = QWidget(self)
         self.btn_voice = QPushButton(self.centralwidget)
@@ -88,7 +88,7 @@ class App(QWidget):
                                       "	border-radius: 20px;\n"
                                       "	background-color: rgba(255, 255, 255, 120);\n"
                                       "}")
-        self.btn_voice.setGeometry(QRect(550, 40, 100, 40))
+        self.btn_voice.setGeometry(QRect(550, 800, 100, 40))
         self.btn_voice.setObjectName("btn_voice")
         self.btn_voice.setText("Start Voice")
         self.btn_voice.clicked.connect(self.evt_btn_voice_clicked)
@@ -97,7 +97,7 @@ class App(QWidget):
         # create a label
         self.label = QLabel(self)
         self.label.setStyleSheet("QLabel{ background-color: rgba(255, 255, 255, 120) }")
-        self.label.setGeometry(QRect(120, 100, 960, 720))
+        self.label.setGeometry(QRect(120, 40, 960, 720))
         self.label.setMinimumSize(QSize(960, 720))
         self.label.setMaximumSize(QSize(960, 720))
         self.label.setText("")
@@ -161,7 +161,7 @@ class LoadingProgressApp(QMainWindow):
         # QTIMER
         self.timer = QTimer()
         self.timer.timeout.connect(self.progress)
-        self.timer.start(30)
+        self.timer.start(15)
 
         self.ui.label_description.setText(
             "<strong>WELCOME</strong> TO MY APPLICATION")
@@ -177,8 +177,8 @@ class LoadingProgressApp(QMainWindow):
         if self.counter > 100:
             self.timer.stop()
             # SHOW MAIN WINDOW
-            # self.main = App()
-            # self.main.show()
+            self.main = App()
+            self.main.show()
             # CLOSE Loading SCREEN
             self.close()
 
@@ -273,6 +273,6 @@ class LoadingCircleApp(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = LoadingCircleApp()
+    window = LoadingProgressApp()
     window.show()
     sys.exit(app.exec())
