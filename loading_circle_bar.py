@@ -9,98 +9,101 @@ class Loading_CircleBar(object):
     def setupUi(self, LoadingScreen):
         if LoadingScreen.objectName():
             LoadingScreen.setObjectName(u"LoadingScreen")
-        LoadingScreen.resize(340, 340)
+        LoadingScreen.resize(520, 490)
         self.centralwidget = QWidget(LoadingScreen)
-        self.centralwidget.setObjectName(u"centralwidget")
+        self.centralwidget.setObjectName("centralwidget")
         self.circularProgressBarBase = QFrame(self.centralwidget)
-        self.circularProgressBarBase.setObjectName(u"circularProgressBarBase")
-        self.circularProgressBarBase.setGeometry(QRect(10, 10, 320, 320))
+        self.circularProgressBarBase.setGeometry(
+            QRect(50, 30, 411, 411))
         self.circularProgressBarBase.setFrameShape(QFrame.NoFrame)
         self.circularProgressBarBase.setFrameShadow(QFrame.Raised)
+        self.circularProgressBarBase.setObjectName("circularProgressBarBase")
         self.circularProgress = QFrame(self.circularProgressBarBase)
-        self.circularProgress.setObjectName(u"circularProgress")
-        self.circularProgress.setGeometry(QRect(10, 10, 300, 300))
-        self.circularProgress.setStyleSheet(u"QFrame{\n"
-                                            "	border-radius: 150px;\n"
-                                            "	background-color: qconicalgradient(cx:0.5, cy:0.5, angle:90, stop:0.749 rgba(255, 0, 127, 0), stop:0.750 rgba(17, 213, 255, 255));\n"
+        self.circularProgress.setGeometry(QRect(10, 10, 400, 400))
+        self.circularProgress.setStyleSheet("QFrame{\n"
+                                            "    border-radius: 200px;\n"
+                                            "    background-color: qconicalgradient(cx:0.5, cy:0.5, angle:90, stop:0.749 rgba(255, 0, 127, 0), stop:0.750 rgba(85, 170, 255, 255));\n"
                                             "}")
         self.circularProgress.setFrameShape(QFrame.NoFrame)
         self.circularProgress.setFrameShadow(QFrame.Raised)
-        self.circularBg = QFrame(self.circularProgressBarBase)
-        self.circularBg.setObjectName(u"circularBg")
-        self.circularBg.setGeometry(QRect(10, 10, 300, 300))
-        self.circularBg.setStyleSheet(u"QFrame{\n"
-                                      "	border-radius: 150px;\n"
-                                      "	background-color: rgba(56, 69, 89, 120);\n"
-                                      "}")
-        self.circularBg.setFrameShape(QFrame.NoFrame)
-        self.circularBg.setFrameShadow(QFrame.Raised)
-        self.container = QFrame(self.circularProgressBarBase)
-        self.container.setObjectName(u"container")
-        self.container.setGeometry(QRect(25, 25, 270, 270))
-        self.container.setStyleSheet(u"QFrame{\n"
-                                     "	border-radius: 135px;\n"
-                                     "	background-color: rgb(56, 69, 89);\n"
+        self.circularProgress.setObjectName("circularProgress")
+        self.container = QFrame(self.circularProgress)
+        self.container.setGeometry(QRect(30, 30, 341, 341))
+        self.container.setStyleSheet("QFrame{\n"
+                                     "    border-radius: 170px;\n"
+                                     "    background-color: rgb(77, 77, 127);\n"
                                      "}")
         self.container.setFrameShape(QFrame.NoFrame)
         self.container.setFrameShadow(QFrame.Raised)
-        self.widget = QWidget(self.container)
-        self.widget.setObjectName(u"widget")
-        self.widget.setGeometry(QRect(40, 50, 193, 191))
-        self.gridLayout = QGridLayout(self.widget)
-        self.gridLayout.setObjectName(u"gridLayout")
+        self.container.setObjectName("container")
+        self.layoutWidget = QWidget(self.container)
+        self.layoutWidget.setGeometry(QRect(55, 70, 241, 211))
+        self.layoutWidget.setObjectName("layoutWidget")
+        self.gridLayout = QGridLayout(self.layoutWidget)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.labelTitle = QLabel(self.widget)
-        self.labelTitle.setObjectName(u"labelTitle")
+        self.gridLayout.setObjectName("gridLayout")
+        self.labelTitle = QLabel(self.layoutWidget)
         font = QFont()
-        font.setFamily(u"Segoe UI")
+        font.setFamily("Segoe UI")
         font.setPointSize(12)
         self.labelTitle.setFont(font)
-        self.labelTitle.setStyleSheet(u"background-color: none;\n"
+        self.labelTitle.setStyleSheet("background-color: none;\n"
                                       "color: #FFFFFF")
         self.labelTitle.setAlignment(Qt.AlignCenter)
-
+        self.labelTitle.setObjectName("labelTitle")
         self.gridLayout.addWidget(self.labelTitle, 0, 0, 1, 1)
-
-        self.labelPercentage = QLabel(self.widget)
-        self.labelPercentage.setObjectName(u"labelPercentage")
-        font1 = QFont()
-        font1.setFamily(u"Roboto Thin")
-        font1.setPointSize(68)
-        self.labelPercentage.setFont(font1)
-        self.labelPercentage.setStyleSheet(u"background-color: none;\n"
+        self.labelPercentage = QLabel(self.layoutWidget)
+        font = QFont()
+        font.setFamily("Roboto Thin")
+        font.setPointSize(68)
+        self.labelPercentage.setFont(font)
+        self.labelPercentage.setStyleSheet("background-color: none;\n"
                                            "color: #FFFFFF")
         self.labelPercentage.setAlignment(Qt.AlignCenter)
-
+        self.labelPercentage.setObjectName("labelPercentage")
         self.gridLayout.addWidget(self.labelPercentage, 1, 0, 1, 1)
-
-        self.labelLoadingInfo = QLabel(self.widget)
-        self.labelLoadingInfo.setObjectName(u"labelLoadingInfo")
+        self.labelLoadingInfo = QLabel(self.layoutWidget)
         self.labelLoadingInfo.setMinimumSize(QSize(0, 20))
         self.labelLoadingInfo.setMaximumSize(QSize(16777215, 20))
-        font2 = QFont()
-        font2.setFamily(u"Segoe UI")
-        font2.setPointSize(9)
-        self.labelLoadingInfo.setFont(font2)
-        self.labelLoadingInfo.setStyleSheet(u"QLabel{\n"
-                                            "	border-radius: 10px;	\n"
-                                            "	background-color: rgb(93, 93, 154);\n"
-                                            "	color: #FFFFFF;\n"
-                                            "	margin-left: 40px;\n"
-                                            "	margin-right: 40px;\n"
+        font = QFont()
+        font.setFamily("Segoe UI")
+        font.setPointSize(9)
+        self.labelLoadingInfo.setFont(font)
+        self.labelLoadingInfo.setStyleSheet("QLabel{\n"
+                                            "    border-radius: 10px;    \n"
+                                            "    background-color: rgb(93, 93, 154);\n"
+                                            "    color: #FFFFFF;\n"
+                                            "    margin-left: 40px;\n"
+                                            "    margin-right: 40px;\n"
                                             "}")
         self.labelLoadingInfo.setFrameShape(QFrame.NoFrame)
         self.labelLoadingInfo.setAlignment(Qt.AlignCenter)
-
+        self.labelLoadingInfo.setObjectName("labelLoadingInfo")
         self.gridLayout.addWidget(self.labelLoadingInfo, 2, 0, 1, 1)
-
+        self.labelCredits = QLabel(self.layoutWidget)
+        font = QFont()
+        font.setFamily("Segoe UI")
+        font.setPointSize(9)
+        self.labelCredits.setFont(font)
+        self.labelCredits.setStyleSheet("background-color: none;\n"
+                                        "color: rgb(155, 155, 255);")
+        self.labelCredits.setAlignment(Qt.AlignCenter)
+        self.labelCredits.setObjectName("labelCredits")
+        self.gridLayout.addWidget(self.labelCredits, 3, 0, 1, 1)
+        self.circularBg = QFrame(self.circularProgressBarBase)
+        self.circularBg.setGeometry(QRect(10, 10, 400, 400))
+        self.circularBg.setStyleSheet("QFrame{\n"
+                                      "    border-radius: 200px;\n"
+                                      "    background-color: rgba(77, 77, 127, 120);\n"
+                                      "}")
+        self.circularBg.setFrameShape(QFrame.NoFrame)
+        self.circularBg.setFrameShadow(QFrame.Raised)
+        self.circularBg.setObjectName("circularBg")
         self.circularBg.raise_()
         self.circularProgress.raise_()
-        self.container.raise_()
         LoadingScreen.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(LoadingScreen)
-
         QMetaObject.connectSlotsByName(LoadingScreen)
     # setupUi
 

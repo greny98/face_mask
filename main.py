@@ -213,7 +213,7 @@ class LoadingCircleApp(QMainWindow):
         self.timer = QTimer()
         self.timer.timeout.connect(self.progress)
         # TIMER IN MILLISECONDS
-        self.timer.start(15)
+        self.timer.start(20)
 
         # SHOW ==> MAIN WINDOW
         ########################################################################
@@ -253,7 +253,7 @@ class LoadingCircleApp(QMainWindow):
         # PROGRESSBAR STYLESHEET BASE
         styleSheet = """
         QFrame{
-        	border-radius: 150px;
+        	border-radius: 200px;
         	background-color: qconicalgradient(cx:0.5, cy:0.5, angle:90, stop:{STOP_1} rgba(255, 0, 127, 0), stop:{STOP_2} rgba(85, 170, 255, 255));
         }
         """
