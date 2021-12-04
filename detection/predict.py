@@ -20,7 +20,7 @@ def remind(engine):
 is_reminding = False
 
 
-def execute(frame, model,engine):
+def execute(frame, model, engine):
     # Convert to RGB
     image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     # Predict
@@ -45,7 +45,7 @@ def execute(frame, model,engine):
         cv2.rectangle(frame, (x1, y1), (x2, y2), cmap[label], 4)
 
     # Check from without mask to with mask
-    if need_mask and (not is_reminding):
-        t1 = threading.Thread(target=remind, args=[engine])
-        t1.start()
+    # if need_mask and (not is_reminding):
+    #     t1 = threading.Thread(target=remind, args=[engine])
+    #     t1.start()
     return frame

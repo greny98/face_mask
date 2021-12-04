@@ -1,7 +1,6 @@
-from assistant import process
-import pyttsx3
-
-engine = pyttsx3.init()
+from gtts import gTTS
 
 if __name__ == '__main__':
-    process.run(engine)
+    text = "Bạn có thể nhắc lại không?"
+    tts = gTTS(text, lang='vi')
+    tts.save("repeat.mp3")

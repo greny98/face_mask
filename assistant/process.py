@@ -1,7 +1,7 @@
 import time
 from fuzzywuzzy import fuzz
-import pyttsx3
 import speech_recognition as sr
+from playsound import playsound
 
 
 def find_question_num(ques, list_ques):
@@ -21,7 +21,7 @@ def find_question_num(ques, list_ques):
 
 
 def load_questions():
-    with open('data/Question.txt', encoding='utf16') as fp:
+    with open('data/QuestionV2.txt') as fp:
         text = fp.read()
         questions = text.split('\n')
         return questions
@@ -32,6 +32,7 @@ def load_answers():
         text = fp.read()
         answers = text.split('\n')
         return answers
+
 
 def remove_accents(input_str):
     s1 = u'ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾếỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹ'
@@ -50,9 +51,25 @@ def say(text, engine):
     engine.say(text)
     engine.runAndWait()
 
-def run(engine,showLoading,hideLoading):
+
+def loop_check(source, recognizer):
+    i = 0
+    while i < 3:
+        try:
+            print("Listening...")
+            audio = recognizer.listen(source, timeout=10, phrase_time_limit=5)
+            text = recognizer.recognize_google(audio, language='vi')
+            return text
+        except sr.RequestError:
+            break
+        except sr.UnknownValueError:
+            playsound("data/audio_data/repeat.mp3")
+            i += 1
+
+
+def run(engine, showLoading, hideLoading):
     questions = load_questions()
-    answers = load_answers()
+    # answers = load_answers()
     recognizer = sr.Recognizer()
     microphone = sr.Microphone()
     engine.setProperty('rate', 175)
@@ -61,40 +78,42 @@ def run(engine,showLoading,hideLoading):
         recognizer.adjust_for_ambient_noise(source)  # loc nhieu
         is_communicate = True
         count_failed = 0
-        say("Hi, nice to meet you", engine)
+        playsound("data/audio_data/greeting.mp3")
         while is_communicate:
-            say("what information would you like to know?", engine)
-            print("Listening...")
-            audio = recognizer.listen(source, timeout=10, phrase_time_limit=5)
+            playsound("data/audio_data/open.mp3")
+            # audio = recognizer.listen(source, timeout=10, phrase_time_limit=5)
             try:
+                # showLoading()
+                # say("please wait a moment", engine)
+                # hideLoading()
+                ques = loop_check(source, recognizer)
+                playsound("data/audio_data/wait.mp3")
                 print('Waiting...')
-                showLoading()
-                say("please wait a moment", engine)
-                hideLoading()
-                ques = recognizer.recognize_google(audio, language='vi')
+                if ques is None:
+                    break
                 print("Question: ", ques)
                 ques_num = find_question_num(ques, questions)
                 print("Question num: ", ques_num)
                 if ques_num != -1:
-                    print("Answer: ", answers[ques_num])
-                    say(answers[ques_num], engine)
+                    playsound(f'data/audio_data/{ques_num + 1}.m4a')
                 else:
-                    say("I don't know", engine)
-                say('do you want any other information?', engine)
-                print("Listening...")
-                audio = recognizer.listen(source, timeout=10, phrase_time_limit=5)
-                next = recognizer.recognize_google(audio, language='en')
-                print(next)
-                next_sent = remove_accents(next.lower())
-                if 'no' in next_sent:
-                    say("Goodbye. have a nice day!", engine)
+                    playsound("data/audio_data/dont_know.mp3")
+                playsound("data/audio_data/continue.mp3")
+                # audio = recognizer.listen(source, timeout=10, phrase_time_limit=5)
+                next_sent = loop_check(source, recognizer)
+                if next_sent is None:
+                    break
+                print(next_sent)
+                next_sent = next_sent.lower()
+                if 'không' in next_sent:
+                    playsound("data/audio_data/bye.mp3")
                     break
             except sr.RequestError:  # Service/network error
                 print("API unavailable")
                 count_failed += 1
             except sr.UnknownValueError:  # Can't convert speech to text
                 print("Unable to recognize speech")
-                say("can you repeat?", engine)
+                playsound("data/audio_data/repeat.mp3")
                 count_failed += 1
             if count_failed >= 5:
                 break

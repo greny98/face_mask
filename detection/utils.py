@@ -22,7 +22,7 @@ def detect_fn(image_np, model):
     return results
 
 
-def check_need_mask(results, threshold=0.75):
+def check_need_mask(results, threshold=0.6):
     need_mask = False
     scores = tf.convert_to_tensor(results['detection_scores'])
     boxes = tf.convert_to_tensor(results['detection_boxes'])
